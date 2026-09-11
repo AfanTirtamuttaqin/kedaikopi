@@ -321,6 +321,7 @@ body {
   flex-wrap: wrap;
   margin-top: 5rem;
   justify-content: center;
+   gap: 3rem;
 }
 
 .Menu .row .Menu-card {
@@ -328,9 +329,10 @@ body {
 }
 
 .Menu .row .Menu-card img {
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  width: 50%;
-  width: 50%;
+  object-fit: cover;
 }
 
 .Menu .row .Menu-card .Menu-card-tittle {
