@@ -16,11 +16,20 @@
     <!-- feather icons -->
     <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
     <link rel="stylesheet" href="css/style.css" />
+
+    <!-- alphineJS -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- App -->
+    <script src="src/app.js" async></script>
   </head>
 
   <body>
     <!-- Navbar start -->
-    <nav class="Navbar">
+    <nav class="Navbar" x-data>
       <a href="" class="Navbar-logo">RuangKopi<span>Senja</span></a>
 
       <div class="Navbar-nav">
@@ -33,7 +42,10 @@
 
       <div class="Navbar-extra">
         <a href="#" id="search-button"><i data-feather="search"></i></a>
-        <a href="#" id="Shopping-cart-button"><i data-feather="shopping-cart"></i></a>
+        <a href="#" id="Shopping-cart-button"
+          ><i data-feather="shopping-cart"></i>
+          <span class="quantity-badge" x-show="$store.cart.quantity"  x-text="$store.cart.quantity"></span>
+      </a>
         <a href="#" id="Hamburger-menu"><i data-feather="menu"></i></a>
       </div>
 
@@ -44,35 +56,57 @@
       </div>
       <!-- Search form end -->
 
-
       <!-- shopping cart start -->
-       <div class="shopping-cart">
+      <div class="shopping-cart">
+        <template x-for="(item,index) in $store.cart.items" x-keys="index">
         <div class="cart-item">
-          <img src="img/americano.png" alt="">
+          <img :src="`img/${item.img}`" :alt="item.name">
           <div class="item-detail">
-            <h3>Americano</h3>
-            <div class="item-price">Rp 20k</div>
+            <h3 x-text="item.name"> </h3>
+            <div class="item-price"></div>
+            <span x-text="rupiah(item.price)"></span> &times;
+            <button id="remove" @click="$store.cart.remove(item.id)">&minus;</button>
+            <span x-text="item.quantity"></span>
+            <button id="add" @click="$store.cart.add(item)">&plus;</button> &equals;
+            <span x-text="rupiah(item.total)"></span>
           </div>
-          <i data-feather="trash-2" class="remove-item"></i>
-        </div>
-        <div class="cart-item">
-          <img src="img/coffe latte.jpg" alt="">
-          <div class="item-detail">
-            <h3>Coffe Latte</h3>
-            <div class="item-price">Rp 25k</div>
-          </div>
-          <i data-feather="trash-2" class="remove-item"></i>
-        </div>
-        <div class="cart-item">
-          <img src="img/mocha.jpg" alt="">
-          <div class="item-detail">
-            <h3>Mocha</h3>
-            <div class="item-price">Rp 18k</div>
-          </div>
-          <i data-feather="trash-2" class="remove-item"></i>
-        </div>
-       </div>
+        </template>
+        <h4 x-show="!$store.cart.items.length" style="margin-top: 1rem;">Cart Is Empty</h4>
+        <h4 x-show="$store.cart.items.length">Total : <span x-text="rupiah($store.cart.total)"></span></h4>
+      
+      <div class="form-container" x-show="$store.cart.items.length">
+    <form action="" id="checkoutForm">
+      <input type="hidden" name="items" x-model=" JSON.stringify($store.cart.items)">
+        <input type="hidden" name="total" x-model=" $store.cart.total">
+      <h5>Customer Detail</h5>
+
+        <label for="name">
+            <span>Name</span>
+            <input type="text" name="name" id="name">
+        </label>
+
+        <label for="email">
+            <span>Email</span>
+            <input type="email" name="email" id="email">
+        </label>
+
+        <label for="phone">
+            <span>Phone</span>
+            <input type="number" name="phone" id="phone" autocomplete="off">
+        </label>
+
+        <button 
+            class="checkout-button" 
+            type="submit" 
+            id="checkout-button" 
+            value="checkout">
+            Checkout
+        </button>
+    </form>
+</div>
+      </div>
       <!-- shopping cart end -->
+
     </nav>
 
     <!-- Navbar end -->
@@ -138,7 +172,7 @@
           <p class="Menu-card-price">Rp.15000</p>
         </div>
         <div class="Menu-card">
-          <img src="img/americano.png" alt="Espresso"/>
+          <img src="img/americano.png" alt="Espresso" />
           <h3 class="Menu-card-tittle">Americano</h3>
           <p class="Menu-card-price">Rp.20000</p>
         </div>
@@ -155,7 +189,7 @@
         </div>
         <div class="Menu-card">
           <br />
-          <img src="img/mocha.jpg" alt="Mocha"/>
+          <img src="img/mocha.jpg" alt="Mocha" />
           <h3 class="Menu-card-tittle">Mocha</h3>
           <p class="Menu-card-price">Rp.18000</p>
         </div>
@@ -170,76 +204,110 @@
     <!-- menu Section end -->
 
     <!-- produk section start -->
+     <!-- alphine js -->
 
-    <section class="products" id="products">
+    <section class="products" id="products" x-data="products">
       <h2><span>Produk Unggulan </span>Kami</h2>
       <p>berikut adalah beberapa produk Unggulandari kami</p>
 
       <div class="row">
-        <div class="product-card">
-          <div class="product-icons">
-            <a href="#"> <i data-feather="shopping-cart"></i></a>
-            <a href="#item-detail-modal" class="item-detail-button"><i data-feather="eye"></i></a>
-          </div>
+        <template x-for="(item,index) in items" x-key="index">
+          <div class="product-card">
+            <div class="product-icons">
+              <a href="#" @click.prevent="$store.cart.add(item)">
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#shopping-cart"/>
+                </svg>
+              </a>
+              <a href="#item-detail-modal" class="item-detail-button">
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#eye"/>
+                </svg></i
+              ></a>
+            </div>
             <div class="product-image">
-              <img src="img/americano.png" alt="">
-            </div>  
+              <img :src="`img/${item.img}`" :alt="item.name" />
+            </div>
             <div class="product-content">
-              <h3>Americano</h3>
+              <h3 x-text="item.name"></h3>
               <div class="product-stars">
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star"></i>
-                <i data-feather="star"></i>
-                <i data-feather="star"></i>
-              </div>
-              <div class="product-price">Rp 20k <span> Rp 35k</span>
-          </div>
-         </div>
-      </div>
+                <svg
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#star"/>
+                </svg>
+                <svg
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#star"/>
+                </svg>
+                <svg
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#star"/>
+                </svg>
+                <svg
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#star"/>
+                </svg>
+                <svg
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <use href="img/feather-sprite.svg#star"/>
+                </svg>
 
-        <div class="product-card">
-          <div class="product-icons">
-            <a href="#"> <i data-feather="shopping-cart"></i></a>
-            <a href="#item-detail-modal-2" class="item-detail-button"><i data-feather="eye"></i></a>
-          </div>
-            <div class="product-image">
-              <img src="img/coffe latte.jpg" alt="">
-            </div>  
-            <div class="product-content">
-              <h3>Coffe latte</h3>
-              <div class="product-stars">
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star"></i>
               </div>
-              <div class="product-price">Rp 25k <span> Rp 40k</span>
+              <div class="product-price"><span x-text="rupiah(item.price)"></span></div>
+            </div>
           </div>
-         </div>
-
-      </div>
-        <div class="product-card">
-          <div class="product-icons">
-            <a href="#"> <i data-feather="shopping-cart"></i></a>
-            <a href="#item-detail-modal-3" class="item-detail-button"><i data-feather="eye"></i></a>
-          </div>
-            <div class="product-image">
-              <img src="img/mocha.jpg" alt="">
-            </div>  
-            <div class="product-content">
-              <h3>Mocha</h3>
-              <div class="product-stars">
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star" class="star"></i>
-                <i data-feather="star"></i>
-                <i data-feather="star"></i>
-              </div>
-              <div class="product-price">Rp 18k <span> Rp 30k</span>
-          </div>
-         </div>
+        </template>
       </div>
     </section>
     <!-- produk section end -->
@@ -303,80 +371,93 @@
 
     <!-- footer end -->
 
+    <!-- Modal Boxitem Detail start -->
 
-<!-- Modal Boxitem Detail start -->
-
-
- <div class="modal" id="item-detail-modal">
-  <div class="modal-container">
-    <a href="#" class="close-icon"><i data-feather="x"></i></a>
-    <div class="modal-content">
-      <img src="img/americano.png" alt="">
-      <div class="product-content">
-        <h3>Americano</h3>
-        <p>minuman kopi yang dibuat dengan mencampurkan espresso dan air panas. Minuman ini memiliki rasa kopi yang lebih ringan dibandingkan espresso murni, tetapi tetap memiliki karakter kopi yang kuat.</p>
-              <div class="product-stars">
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star"></i>
-                <i data-feather="star"></i>
-                <i data-feather="star"></i>
-              </div>
-              <div class="product-price">Rp 30k <span></span></div>
-              <a href="#"><i data-feather="shopping-cart"></i><span>add to cart</span></a>
+    <div class="modal" id="item-detail-modal">
+      <div class="modal-container">
+        <a href="#" class="close-icon"><i data-feather="x"></i></a>
+        <div class="modal-content">
+          <img src="img/americano.png" alt="" />
+          <div class="product-content">
+            <h3>Americano</h3>
+            <p>
+              minuman kopi yang dibuat dengan mencampurkan espresso dan air
+              panas. Minuman ini memiliki rasa kopi yang lebih ringan
+              dibandingkan espresso murni, tetapi tetap memiliki karakter kopi
+              yang kuat.
+            </p>
+            <div class="product-stars">
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star"></i>
+              <i data-feather="star"></i>
+              <i data-feather="star"></i>
             </div>
+            <div class="product-price">Rp 30k <span></span></div>
+            <a href="#"
+              ><i data-feather="shopping-cart"></i><span>add to cart</span></a
+            >
           </div>
         </div>
       </div>
+    </div>
 
-  <div class="modal" id="item-detail-modal-2">
-  <div class="modal-container">
-    <a href="#" class="close-icon"><i data-feather="x"></i></a>
-    <div class="modal-content">
-      <img src="img/coffe latte.jpg" alt="">
-      <div class="product-content">
-        <h3>coffe latte</h3>
-        <p>minuman yang dibuat dari espresso dan susu panas, biasanya dengan sedikit lapisan foam di bagian atas.</p>
-              <div class="product-stars2">
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star"></i>
-              </div>
-              <div class="product-price">Rp 30k <span></span></div>
-              <a href="#"><i data-feather="shopping-cart"></i><span>add to cart</span></a>
+    <div class="modal" id="item-detail-modal-2">
+      <div class="modal-container">
+        <a href="#" class="close-icon"><i data-feather="x"></i></a>
+        <div class="modal-content">
+          <img src="img/coffe latte.jpg" alt="" />
+          <div class="product-content">
+            <h3>coffe latte</h3>
+            <p>
+              minuman yang dibuat dari espresso dan susu panas, biasanya dengan
+              sedikit lapisan foam di bagian atas.
+            </p>
+            <div class="product-stars2">
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star"></i>
             </div>
+            <div class="product-price">Rp 30k <span></span></div>
+            <a href="#"
+              ><i data-feather="shopping-cart"></i><span>add to cart</span></a
+            >
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="modal" id="item-detail-modal-3">
-  <div class="modal-container">
-    <a href="#" class="close-icon"><i data-feather="x"></i></a>
-    <div class="modal-content">
-      <img src="img/mocha.jpg" alt="">
-      <div class="product-content">
-        <h3>Mocha</h3>
-        <p>minuman kopi yang dibuat dari perpaduan espresso, susu, dan cokelat. Rasanya cenderung manis dengan aroma kopi dan cokelat yang khas.</p>
-              <div class="product-stars3">
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star" class="stars"></i>
-                <i data-feather="star"></i>
-              </div>
-              <div class="product-price">Rp 30k <span></span></div>
-              <a href="#"><i data-feather="shopping-cart"></i><span>add to cart</span></a>
+    <div class="modal" id="item-detail-modal-3">
+      <div class="modal-container">
+        <a href="#" class="close-icon"><i data-feather="x"></i></a>
+        <div class="modal-content">
+          <img src="img/mocha.jpg" alt="" />
+          <div class="product-content">
+            <h3>Mocha</h3>
+            <p>
+              minuman kopi yang dibuat dari perpaduan espresso, susu, dan
+              cokelat. Rasanya cenderung manis dengan aroma kopi dan cokelat
+              yang khas.
+            </p>
+            <div class="product-stars3">
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star" class="stars"></i>
+              <i data-feather="star"></i>
             </div>
+            <div class="product-price">Rp 30k <span></span></div>
+            <a href="#"
+              ><i data-feather="shopping-cart"></i><span>add to cart</span></a
+            >
           </div>
         </div>
       </div>
+    </div>
 
-
-     
-
-<!-- Modal Box item Detail end -->
+    <!-- Modal Box item Detail end -->
     <!-- feather icons -->
     <script>
       feather.replace();
